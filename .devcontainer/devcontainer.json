@@ -1,0 +1,212 @@
+// ==============================================================================
+// Dev Container Configuration for Minimal Full-Stack App (Student Notes)
+// ==============================================================================
+// Purpose:
+// - Provides a complete, reproducible development environment in VS Code
+// - Uses Docker Compose to run MySQL, backend, and frontend services
+// - Installs recommended VS Code extensions for JavaScript/React development
+// - Pre-configures Node.js, npm, and common development tools
+//
+// Teaching points:
+// - Dev Containers eliminate "works on my machine" problems by standardizing
+//   the development environment across all team members and student machines.
+// - The container runs on Linux (Debian) even if your host is Windows/macOS,
+//   ensuring consistent behavior and easier deployment to Linux servers.
+// - VS Code connects to the running container and provides full IDE features
+//   (IntelliSense, debugging, terminal, extensions) as if working locally.
+// - Port forwarding (5173, 4000, 3306) lets you access services from your
+//   host browser while the code runs inside the container.
+//
+// Quick Start:
+// 1. Install Docker Desktop and VS Code "Dev Containers" extension
+// 2. Open this folder in VS Code
+// 3. Click "Reopen in Container" when prompted (or Cmd/Ctrl+Shift+P → "Dev Containers: Reopen in Container")
+// 4. Wait for container build and startup (first time takes longer)
+// 5. Open integrated terminal and run: npm install
+// 6. Start development: npm run dev
+// 7. Access frontend at http://localhost:5173, backend at http://localhost:4000
+//
+// Troubleshooting:
+// - If services don't start: Check Docker Desktop is running
+// - If ports are already in use: Stop conflicting services or change ports in docker-compose.yml
+// - If hot-reload doesn't work: Check volume mounts in docker-compose.yml
+// - If MySQL connection fails: Wait for healthcheck (docker compose ps to see status)
+// ==============================================================================
+{
+  "name": "Minimal Full-Stack App (Node.js + React + MySQL)",
+
+  // Use DevContainer-specific Docker Compose with Debian-based images
+  // DevContainer features require Debian/Ubuntu, not Alpine Linux
+  "dockerComposeFile": ["docker-compose.dev.yml"],
+
+  // Which service to use as the main development container
+  "service": "dev",
+  "overrideCommand": true,
+  "workspaceFolder": "/workspace",
+
+  // Ports to forward from container to host
+  // Teaching note: These make services accessible in your host browser
+  // - 5173: Vite dev server (frontend with hot-reload)
+  // - 4000: Express API (backend)
+  // - 3306: MySQL (for database tools like MySQL Workbench)
+  "forwardPorts": [5173, 4000, 3306],
+
+  // Port attributes: labels and actions for forwarded ports
+  "portsAttributes": {
+    "5173": {
+      "label": "Frontend (Vite)",
+      "onAutoForward": "notify"
+    },
+    "4000": {
+      "label": "Backend (Express)",
+      "onAutoForward": "notify"
+    },
+    "3306": {
+      "label": "MySQL Database",
+      "onAutoForward": "ignore"
+    }
+  },
+
+  // VS Code customizations: settings and extensions
+  "customizations": {
+    "vscode": {
+      // Workspace settings applied inside the container
+      "settings": {
+        // Normalize line endings for consistency across OSes
+        "files.eol": "\n",
+        // Editor settings
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+
+        // JavaScript/React settings
+        "javascript.updateImportsOnFileMove.enabled": "always",
+        "javascript.suggest.autoImports": true,
+
+        // ESLint settings
+        "eslint.validate": ["javascript", "javascriptreact"],
+        "eslint.workingDirectories": [
+          { "pattern": "./backend" },
+          { "pattern": "./frontend" }
+        ],
+
+        // File associations
+        "files.associations": {
+          "*.jsx": "javascriptreact"
+        },
+
+        // Terminal settings
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        },
+
+        // SQLTools: preconfigure a connection that uses the Docker network host
+        // This runs inside the dev container, so 'mysql' resolves to the MySQL service
+        "sqltools.connections": [
+          {
+            "name": "Dev MySQL (docker network)",
+            "driver": "MySQL",
+            "previewLimit": 50,
+            "server": "mysql",
+            "port": 3306,
+            "database": "minimal_app_db",
+            "username": "appuser",
+            "password": "apppassword",
+            "askForPassword": false,
+            "connectionTimeout": 30
+          }
+        ]
+      },
+
+      // Extensions to install inside the container
+      // Teaching note: These provide IntelliSense, linting, debugging, and more
+      "extensions": [
+        // JavaScript/Node.js essentials
+        "dbaeumer.vscode-eslint", // ESLint integration
+        "esbenp.prettier-vscode", // Code formatter
+
+        // React development
+        "dsznajder.es7-react-js-snippets", // React snippets
+
+        // Database tools
+        "mtxr.sqltools", // SQL client
+        "mtxr.sqltools-driver-mysql", // MySQL driver for SQLTools
+
+        // Docker support
+        "ms-azuretools.vscode-docker", // Docker file support and management
+
+        // Git integration
+        "eamodio.gitlens", // Enhanced Git features
+
+        // Utilities
+        "christian-kohler.path-intellisense", // Auto-complete file paths
+        "formulahendry.auto-rename-tag", // Auto-rename paired HTML/JSX tags
+        "bradlc.vscode-tailwindcss", // Tailwind CSS IntelliSense
+
+        // REST API testing (optional but useful)
+        "humao.rest-client" // Send HTTP requests from .http files
+      ]
+    }
+  },
+
+  // Features: additional tools and runtimes to install in the dev container
+  // Teaching note: These are installed using Dev Container Features (pre-packaged scripts)
+  "features": {
+    // Node.js and npm (ensure correct version)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22",
+      "nodeGypDependencies": true,
+      "installYarnUsingApt": false
+    },
+
+    // Git (for version control inside container)
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": false
+    },
+
+    // Common utilities (curl, wget, zip, etc.)
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "upgradePackages": true
+    }
+  },
+
+  "postCreateCommand": "bash -lc 'set -e; tmp=/tmp/post-create-setup.sh; tr -d \"\\r\" </workspace/.devcontainer/post-create-setup.sh > \"$tmp\"; chmod +x \"$tmp\"; bash \"$tmp\" || true; echo \"✅ Setup complete — open a new terminal and run: npm run dev\"'",
+
+  // Keep the terminal simple and avoid long-running shells in lifecycle hooks
+  "postStartCommand": "bash -lc 'echo \"🚀 Ready! Run: npm run dev\"'",
+
+  // Remote user: run VS Code server as this user inside the container
+  // Using 'node' user (non-root) for better security
+  "remoteUser": "node",
+
+  // Container environment variables
+  "containerEnv": {
+    "npm_config_cache": "/home/node/.npm",
+    // Git configuration
+    "GIT_EDITOR": "code --wait",
+    // Enable cross-platform file watching (useful on Windows/macOS)
+    "CHOKIDAR_USEPOLLING": "true",
+    "WATCHPACK_POLLING": "true",
+    // SSH agent socket inside the container (mounted below)
+    "SSH_AUTH_SOCK": "/run/ssh-agent.sock"
+  },
+
+  // Mount the Docker socket so you can run Docker commands inside the container
+  // Teaching note: This allows running 'docker compose' commands from inside the dev container
+  "mounts": [
+    // Allow Docker commands from inside the dev container
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+    // Cross-platform SSH agent forwarding (Docker Desktop provides this socket on macOS/Windows)
+    "source=/run/host-services/ssh-auth.sock,target=/run/ssh-agent.sock,type=bind"
+  ]
+}

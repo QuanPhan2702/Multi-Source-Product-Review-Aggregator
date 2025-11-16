@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Multi-Source Product Review Aggregator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <header class="py-8 bg-white shadow">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h1 class="text-3xl font-semibold text-gray-800">Multi-Source Product Review Aggregator</h1>
+      <p class="text-lg text-gray-600 mt-2">Compare reviews from Amazon, BestBuy, Walmart</p>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <!-- Filter UI (placeholder for future filtering) -->
+    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+      <h3 class="text-lg font-semibold mb-4">Filter Products</h3>
+      <div class="mb-4">
+        <label for="source-filter" class="block text-sm font-medium mb-2">Review Source:</label>
+        <select id="source-filter" class="border rounded px-3 py-2">
+          <option value="all">All Sources</option>
+          <option value="Amazon">Amazon Reviews</option>
+          <option value="BestBuy">BestBuy Reviews</option>
+          <option value="Walmart">Walmart Reviews</option>
+        </select>
+      </div>
+      <div id="results-count" class="text-sm text-gray-600">Showing 0 of 0 products</div>
+    </div>
+
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <!-- Product cards will be injected here -->
+    </div>
+  </main>
+
+  <script src="product-reviews-interface.js"></script>
+</body>
+</html>

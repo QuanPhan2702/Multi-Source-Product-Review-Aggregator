@@ -1,0 +1,81 @@
+# ==============================================================================
+# Docker Compose for DevContainer Development Environment
+# ==============================================================================
+# Purpose:
+# - Provides the same service architecture as production docker-compose.yml
+# - Uses Debian-based Node.js images compatible with DevContainer features
+# - Maintains the same network and volume configuration for consistency
+#
+# Key differences from main docker-compose.yml:
+# - Uses node:22-bullseye instead of node:22-alpine for DevContainer compatibility
+# - DevContainer features (Node.js, Git, utilities) require Debian/Ubuntu base images
+# ==============================================================================
+
+networks:
+  minimal_app_net:
+    driver: bridge
+
+
+volumes:
+  db_data:
+  backend_node_modules:
+  frontend_node_modules:
+
+services:
+  # MySQL for development (initialized from db/init.sql)
+  mysql:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: minimal_app_db
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - minimal_app_net
+    healthcheck:
+      # Use container env vars; escape $ so Compose doesn't expand on the host
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u $${MYSQL_USER} -p$${MYSQL_PASSWORD} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Single Node.js container used by the DevContainer to develop backend and frontend
+  dev:
+    image: node:22-bullseye
+    working_dir: /workspace
+    # Keep the container running so the DevContainer can attach
+    command: sleep infinity
+    environment:
+      # database config for local development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: minimal_app_db
+      DB_USER: appuser
+      DB_PASSWORD: apppassword
+      # frontend dev server can use this to call the backend
+      VITE_BACKEND_URL: http://localhost:4000
+      # Improve file watching on Windows/macOS
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "4000:4000" # backend
+      - "5173:5173" # vite frontend
+    volumes:
+      # Use cached/consistent options to improve performance on macOS/Windows
+      - ..:/workspace:cached
+      - backend_node_modules:/workspace/backend/node_modules
+      - frontend_node_modules:/workspace/frontend/node_modules
+    networks:
+      - minimal_app_net
+    depends_on:
+      mysql:
+        condition: service_healthy
+    # Run container processes as the node user for proper permissions
+    user: "node"

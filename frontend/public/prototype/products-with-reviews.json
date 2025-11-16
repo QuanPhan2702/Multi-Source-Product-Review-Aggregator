@@ -1,0 +1,54 @@
+{
+  "products": [
+    {
+      "id": "prod-001",
+      "name": "Wireless Bluetooth Headphones",
+      "category": "Electronics",
+      "avgRating": 4.2,
+      "totalReviews": 156,
+      "sources": ["Amazon", "BestBuy", "Walmart"],
+      "reviewBreakdown": {
+        "Amazon": {"avgRating": 4.3, "count": 89},
+        "BestBuy": {"avgRating": 4.0, "count": 45},
+        "Walmart": {"avgRating": 4.4, "count": 22}
+      }
+    },
+    {
+      "id": "prod-002",
+      "name": "4K Webcam",
+      "category": "Electronics",
+      "avgRating": 3.8,
+      "totalReviews": 234,
+      "sources": ["Amazon", "BestBuy"],
+      "reviewBreakdown": {
+        "Amazon": {"avgRating": 3.9, "count": 198},
+        "BestBuy": {"avgRating": 3.6, "count": 36}
+      }
+    },
+    {
+      "id": "prod-003",
+      "name": "USB-C Charging Cable",
+      "category": "Accessories",
+      "avgRating": 4.6,
+      "totalReviews": 89,
+      "sources": ["Amazon", "Walmart"],
+      "reviewBreakdown": {
+        "Amazon": {"avgRating": 4.5, "count": 67},
+        "Walmart": {"avgRating": 4.8, "count": 22}
+      }
+    },
+    {
+      "id": "prod-004",
+      "name": "Mechanical Keyboard",
+      "category": "Electronics",
+      "avgRating": 4.4,
+      "totalReviews": 312,
+      "sources": ["Amazon", "BestBuy", "Walmart"],
+      "reviewBreakdown": {
+        "Amazon": {"avgRating": 4.5, "count": 198},
+        "BestBuy": {"avgRating": 4.2, "count": 87},
+        "Walmart": {"avgRating": 4.6, "count": 27}
+      }
+    }
+  ]
+}
