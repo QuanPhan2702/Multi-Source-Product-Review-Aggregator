@@ -9,6 +9,88 @@ const router = express.Router();
 // This file handles review-related endpoints for the product review aggregator.
 // It provides CRUD operations for reviews and review aggregation functionality.
 
+// GET /api/reviews/aggregate/:productId - Get review statistics for a product
+router.get("/aggregate/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+    
+    // Get overall statistics
+    const [overallStats] = await db.query(
+      `SELECT 
+        COUNT(*) as total_reviews,
+        AVG(rating) as average_rating,
+        MIN(rating) as min_rating,
+        MAX(rating) as max_rating
+       FROM reviews 
+       WHERE product_id = ?`,
+      [productId]
+    );
+    
+    // Get source breakdown
+    const [sourceBreakdown] = await db.query(
+      `SELECT 
+        source,
+        COUNT(*) as review_count,
+        AVG(rating) as average_rating
+       FROM reviews 
+       WHERE product_id = ?
+       GROUP BY source
+       ORDER BY source`,
+      [productId]
+    );
+    
+    // Get rating histogram (count by rating)
+    const [histogram] = await db.query(
+      `SELECT 
+        rating,
+        COUNT(*) as count
+       FROM reviews 
+       WHERE product_id = ?
+       GROUP BY rating
+       ORDER BY rating DESC`,
+      [productId]
+    );
+    
+    // Format histogram as object
+    const ratingHistogram = {
+      5: 0,
+      4: 0,
+      3: 0,
+      2: 0,
+      1: 0
+    };
+    
+    histogram.forEach(row => {
+      ratingHistogram[row.rating] = row.count;
+    });
+    
+    res.json({
+      success: true,
+      data: {
+        overall: {
+          average_rating: overallStats[0]?.average_rating ? parseFloat(overallStats[0].average_rating).toFixed(1) : '0.0',
+          total_reviews: overallStats[0]?.total_reviews || 0,
+          min_rating: overallStats[0]?.min_rating || 0,
+          max_rating: overallStats[0]?.max_rating || 0
+        },
+        source_breakdown: sourceBreakdown.map(s => ({
+          source: s.source,
+          average_rating: parseFloat(s.average_rating).toFixed(1),
+          review_count: s.review_count
+        })),
+        rating_histogram: ratingHistogram
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching review aggregate:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch review aggregate",
+      error: error.message
+    });
+  }
+});
+
 // GET /api/reviews - Get all reviews with optional filtering
 router.get("/", async (req, res) => {
   try {

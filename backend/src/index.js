@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import productsRouter from "./routes/products.js";
 import categoriesRouter from "./routes/categories.js";
+import reviewsRouter from "./routes/reviews.js";
 import db from "./db.js";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler.js";
 import { setupStaticServing } from "./middleware/staticServing.js";
@@ -41,10 +42,10 @@ app.use(express.json());
 // containers with a reverse proxy, CORS may not be necessary.
 // CORS means Cross-Origin Resource Sharing.
 app.use(
-  cors({
-    origin: FRONTEND_ORIGIN,
-    credentials: true,
-  })
+    cors({
+        origin: FRONTEND_ORIGIN,
+        credentials: true,
+    })
 );
 
 // ---------------------------------------------------------------------------
@@ -54,25 +55,25 @@ app.use(
 // students to confirm the app is up. Keep it fast and avoid doing heavy work.
 // The endpoint returns a simple DB check (row count) and a timestamp.
 app.get("/health", async (req, res) => {
-  try {
-    const [rows] = await db.query("SELECT COUNT(*) AS count FROM products");
-    const count = rows && rows[0] ? rows[0].count : 0;
-    return res.json({
-      status: "ok",
-      db: "connected",
-      products: Number(count),
-      timestamp: new Date().toISOString(),
-    });
-  } catch (err) {
-    // Degraded: server is up, but DB is unavailable. Keep HTTP 200 so UIs can
-    // distinguish "backend reachable" vs "database down" without special casing.
-    return res.json({
-      status: "degraded",
-      db: "unavailable",
-      error: err.message,
-      timestamp: new Date().toISOString(),
-    });
-  }
+    try {
+        const [rows] = await db.query("SELECT COUNT(*) AS count FROM products");
+        const count = rows && rows[0] ? rows[0].count : 0;
+        return res.json({
+            status: "ok",
+            db: "connected",
+            products: Number(count),
+            timestamp: new Date().toISOString(),
+        });
+    } catch (err) {
+        // Degraded: server is up, but DB is unavailable. Keep HTTP 200 so UIs can
+        // distinguish "backend reachable" vs "database down" without special casing.
+        return res.json({
+            status: "degraded",
+            db: "unavailable",
+            error: err.message,
+            timestamp: new Date().toISOString(),
+        });
+    }
 });
 
 // ---------------------------------------------------------------------------
@@ -82,6 +83,7 @@ app.get("/health", async (req, res) => {
 // receive parsed bodies and the correct CORS headers.
 app.use("/api/products", productsRouter);
 app.use("/api/categories", categoriesRouter);
+app.use("/api/reviews", reviewsRouter);
 
 // EXTENSION_POINT: ADD MORE ROUTES HERE (e.g. users, auth, orders, ...) AS THE APP GROWS
 
@@ -103,7 +105,7 @@ app.use(errorHandler);
 // Start server
 // ---------------------------------------------------------------------------
 app.listen(PORT, () => {
-  console.log(`🚀 Backend server listening on http://localhost:${PORT}`);
-  console.log(`📝 Logs: HTTP requests will be logged in 'dev' format`);
-  console.log(`🔗 CORS enabled for: ${FRONTEND_ORIGIN}`);
+    console.log(`🚀 Backend server listening on http://localhost:${PORT}`);
+    console.log(`📝 Logs: HTTP requests will be logged in 'dev' format`);
+    console.log(`🔗 CORS enabled for: ${FRONTEND_ORIGIN}`);
 });

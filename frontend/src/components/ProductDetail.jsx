@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
+import ReviewStatistics from "./reviews/ReviewStatistics.jsx";
+import ReviewCard from "./reviews/ReviewCard.jsx";
 
 // ---------------------------------------------------------------------------
 // ProductDetail.jsx — Single product detail view (student notes)
@@ -38,6 +40,11 @@ export default function ProductDetail({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // State: review statistics and reviews list
+    const [reviewStats, setReviewStats] = useState(null);
+    const [reviews, setReviews] = useState([]);
+    const [reviewsLoading, setReviewsLoading] = useState(false);
+
     // Fetch product data when component mounts or ID changes
     // Teaching note: This effect runs on mount AND whenever `id` or `backend` changes.
     // If the user navigates from /product/1 to /product/2, React Router will
@@ -58,6 +65,37 @@ export default function ProductDetail({
                 setError(err.message);
             })
             .finally(() => setLoading(false)); // Always stop loading spinner
+    }, [id, backend]);
+
+    // Fetch review statistics and reviews when product ID changes
+    useEffect(() => {
+        if (!id || !backend) return;
+
+        setReviewsLoading(true);
+
+        // Fetch review statistics
+        Promise.all([
+            fetch(`${backend}/api/reviews/aggregate/${id}`)
+                .then((r) => (r.ok ? r.json() : null))
+                .then((data) => data?.data || null)
+                .catch((err) => {
+                    console.error("Error fetching review stats:", err);
+                    return null;
+                }),
+            // Fetch individual reviews
+            fetch(`${backend}/api/reviews?product_id=${id}&limit=20`)
+                .then((r) => (r.ok ? r.json() : null))
+                .then((data) => data?.data || [])
+                .catch((err) => {
+                    console.error("Error fetching reviews:", err);
+                    return [];
+                }),
+        ])
+            .then(([stats, reviewsList]) => {
+                setReviewStats(stats);
+                setReviews(reviewsList);
+            })
+            .finally(() => setReviewsLoading(false));
     }, [id, backend]);
 
     // Delete product with confirmation dialog
@@ -225,9 +263,69 @@ export default function ProductDetail({
                             {new Date(product.created_at).toLocaleString()}
                         </time>
                     </footer>
-                    {/* EXTENSION_POINT: detail.reviews | Add product reviews section | intermediate — Add reviews table and form */}
                 </div>
             </div>
+
+            {/* Review Aggregator Section */}
+            <section
+                className="mt-8 max-w-4xl mx-auto"
+                aria-labelledby="reviews-heading"
+            >
+                <h2
+                    id="reviews-heading"
+                    className="text-2xl font-semibold text-gray-900 mb-6"
+                >
+                    Customer Reviews
+                </h2>
+
+                {reviewsLoading ? (
+                    <div className="py-8 text-center text-gray-500">
+                        Loading reviews…
+                    </div>
+                ) : (
+                    <>
+                        {/* Review Statistics Card */}
+                        {reviewStats && (
+                            <div className="mb-8">
+                                <ReviewStatistics statistics={reviewStats} />
+                            </div>
+                        )}
+
+                        {/* Individual Review Cards */}
+                        {reviews.length > 0 ? (
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                    Individual Reviews ({reviews.length})
+                                </h3>
+                                {reviews.map((review) => (
+                                    <ReviewCard
+                                        key={review.id}
+                                        review={{
+                                            id: review.id,
+                                            source: review.source,
+                                            author: review.reviewer_name,
+                                            reviewer_name: review.reviewer_name,
+                                            rating: review.rating,
+                                            title: review.title,
+                                            content: review.content,
+                                            body: review.content,
+                                            date: review.review_date,
+                                            review_date: review.review_date,
+                                            helpful_votes:
+                                                review.helpful_votes || 0,
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-6 bg-gray-50 rounded-lg text-center text-gray-500">
+                                No reviews available yet. Be the first to review
+                                this product!
+                            </div>
+                        )}
+                    </>
+                )}
+            </section>
         </article>
     );
 }
