@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
@@ -21,6 +21,47 @@ import PropTypes from "prop-types";
 //   page after success. Students can extend this to show undo or optimistic UI.
 // - PropTypes provide runtime validation for props (useful for teaching).
 // ---------------------------------------------------------------------------
+
+/**
+ * A reusable component to display a star rating.
+ */
+function Stars({ rating = 0, reviewCount = 0 }) {
+    const fullStars = useMemo(
+        () => Math.max(0, Math.min(5, Math.round(rating))),
+        [rating]
+    );
+
+    return (
+        <div className="flex items-center gap-1">
+            <span
+                className="inline-flex items-center"
+                aria-label={`${fullStars} out of 5 stars`}
+            >
+                {Array.from({ length: 5 }, (_, i) => (
+                    <svg
+                        key={i}
+                        className={`w-4 h-4 ${
+                            i < fullStars ? "text-yellow-400" : "text-gray-300"
+                        }`}
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                    >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.372 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118L10 13.347l-3.387 2.678c-.784.57-1.838-.197-1.539-1.118l1.286-3.957a1 1 0 00-.364-1.118L2.626 9.384c-.784-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.957z" />
+                    </svg>
+                ))}
+            </span>
+            {reviewCount > 0 && (
+                <span className="text-xs text-gray-500">({reviewCount})</span>
+            )}
+        </div>
+    );
+}
+
+Stars.propTypes = {
+    rating: PropTypes.number,
+    reviewCount: PropTypes.number,
+};
 
 export default function ProductList({
     categories = [],
@@ -60,7 +101,39 @@ export default function ProductList({
                     `${backend}/api/products?${params.toString()}`
                 );
                 const body = await res.json();
-                setProducts(body.data || []);
+                const fetchedProducts = body.data || [];
+
+                if (fetchedProducts.length > 0) {
+                    // For each product, fetch its aggregate review data
+                    const productsWithRatings = await Promise.all(
+                        fetchedProducts.map(async (product) => {
+                            try {
+                                const statsRes = await fetch(
+                                    `${backend}/api/reviews/aggregate/${product.id}`
+                                );
+                                if (!statsRes.ok) return product; // Return original product on error
+                                const statsBody = await statsRes.json();
+                                return {
+                                    ...product,
+                                    average_rating:
+                                        Number(
+                                            statsBody.data?.overall
+                                                ?.average_rating
+                                        ) || 0,
+                                    review_count:
+                                        statsBody.data?.overall
+                                            ?.total_reviews || 0,
+                                };
+                            } catch {
+                                return product; // Return original product on fetch failure
+                            }
+                        })
+                    );
+                    setProducts(productsWithRatings);
+                } else {
+                    setProducts([]);
+                }
+
                 setMeta(
                     body.meta || {
                         total: 0,
@@ -194,7 +267,7 @@ export default function ProductList({
                 {products.map((p) => (
                     <li
                         key={p.id}
-                        className="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden transition-shadow"
+                        className="bg-white rounded-lg shadow hover:shadow-lg overflow-hidden transition-shadow group"
                     >
                         {/* Entire card is clickable (Link wraps image and text) */}
                         <Link
@@ -205,7 +278,7 @@ export default function ProductList({
                             ).toFixed(2)}`}
                         >
                             {/* Product image with fallback placeholder */}
-                            <div className="h-48 w-full overflow-hidden">
+                            <div className="h-72 w-full overflow-hidden">
                                 <img
                                     src={
                                         p.image_url ||
@@ -216,7 +289,7 @@ export default function ProductList({
                                             ? `${p.name} product image`
                                             : "No image available"
                                     }
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                                 />
                             </div>
                             <div className="p-4">
@@ -236,29 +309,11 @@ export default function ProductList({
                                     >
                                         ${Number(p.price).toFixed(2)}
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        {/* Edit and Delete buttons. Teaching note: onClick on the button
-                        prevents the Link's navigation (event propagation stops).
-                        ACCESSIBILITY: Proper button labels and focus management */}
-                                        <Link
-                                            to={`/product/${p.id}/edit`}
-                                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                            aria-label={`Edit ${p.name}`}
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            Edit
-                                        </Link>
-                                        <button
-                                            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(p.id);
-                                            }}
-                                            aria-label={`Delete ${p.name}`}
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
+                                    {/* Star rating - replaces Edit/Delete buttons */}
+                                    <Stars
+                                        rating={p.average_rating}
+                                        reviewCount={p.review_count}
+                                    />
                                 </div>
                             </div>
                         </Link>

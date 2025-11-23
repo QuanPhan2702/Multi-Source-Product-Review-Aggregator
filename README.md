@@ -1,4 +1,4 @@
-# Minimal Product Catalog — Full-Stack Teaching Application
+# Multi-Source Product Review Aggregator — Full-Stack Teaching Application
 
 > **A production-ready, pedagogical starting point for teaching modern full-stack web development to L3 students.**
 
@@ -8,14 +8,15 @@
 
 ## 🎯 What Is This?
 
-This is a **minimal but complete** full-stack web application demonstrating:
+This is a **complete** full-stack web application demonstrating:
 
-- ✅ **RESTful API** with Node.js + Express
-- ✅ **Modern React** with Hooks and React Router
-- ✅ **MySQL database** with proper schema design
-- ✅ **Input validation** and error handling
-- ✅ **Docker Compose** orchestration
-- ✅ **Production-ready patterns** (health checks, logging, PropTypes)
+-   ✅ **RESTful API** with Node.js, Express, and a centralized query builder.
+-   ✅ **Modern React** frontend with Hooks, React Router, and Tailwind CSS.
+-   ✅ **Review Aggregation** from multiple sources (e.g., Amazon, BestBuy).
+-   ✅ **MySQL database** with a schema designed for products, categories, and reviews.
+-   ✅ **Full CRUD operations** for products and reviews.
+-   ✅ **Production-ready patterns** like input validation, error handling, health checks, and logging.
+-   ✅ **Docker Compose** for easy, consistent development environments.
 
 **Perfect for:** Teaching L3 (3rd-year undergraduate) students full-stack development with industry best practices.
 
@@ -33,13 +34,14 @@ Database (MySQL 8.0)
 
 **Key Features:**
 
-- 📦 Product catalog with categories
-- 🔍 Pagination and filtering
-- ✏️ Full CRUD operations
-- 🔐 SQL injection protection
-- ✅ Input validation
-- 🏥 Health monitoring
-- 🐳 Docker-first development
+-   📦 Product catalog with categories
+-   🔍 Pagination and filtering
+-   ⭐ Review submission and aggregation from multiple sources
+-   ✏️ Full CRUD operations for products
+-   🔐 SQL injection protection
+-   ✅ Input validation
+-   🏥 Health monitoring
+-   🐳 Docker-first development
 
 See [LEARNING_NOTES.md](./LEARNING_NOTES.md) for detailed learning objectives.
 
@@ -49,46 +51,45 @@ See [LEARNING_NOTES.md](./LEARNING_NOTES.md) for detailed learning objectives.
 
 ### Prerequisites
 
-- Recommended for all students for easiest setup.  
-  - Install git (http://git-scm.com) with default options
-  - Install Docker Desktop (https://docker.com)  **Remove existing MySQL installations to avoid port conflicts.**
-  - Install VS Code (https://code.visualstudio.com)
-  
-- Alternatively, if you cannot use docker it will need more manual setup:
-  - install Node.js 22+ (https://nodejs.org)
-  - MySQL 8.0+ locally
-  - Create a MySQL database and user as per `db/init.sql` (in code see below).
+-   Recommended for all students for easiest setup.
+    -   Install git (http://git-scm.com) with default options
+    -   Install Docker Desktop (https://docker.com) **Remove existing MySQL installations to avoid port conflicts.**
+    -   Install VS Code (https://code.visualstudio.com)
+-   Alternatively, if you cannot use docker it will need more manual setup:
+    -   install Node.js 22+ (https://nodejs.org)
+    -   MySQL 8.0+ locally
+    -   Create a MySQL database and user as per `db/init.sql` (in code see below).
 
 ### Get the Code
 
 Get the source code locally:
 
-- Clone the Git repository using the VS Code UI (**Recommended**):
-  - View > Command Palette… → type and select “Git: Clone” (or on the Welcome page click “Clone Git Repository…”)
-  - Paste: `https://github.com/ebpro/fullstack-minimal-app.git`
-  - Choose a destination folder, then click “Open” when prompted
-  - If docker is installed, VS Code will prompt to reopen in container - **accept this**
-- Or download ZIP and extract:
-  - https://github.com/ebpro/fullstack-minimal-app/archive/refs/heads/develop.zip
-  - `cd fullstack-minimal-app-develop/`
+-   Clone the Git repository using the VS Code UI (**Recommended**):
+    -   View > Command Palette… → type and select “Git: Clone” (or on the Welcome page click “Clone Git Repository…”)
+    -   Paste: `https://github.com/ebpro/fullstack-minimal-app.git`
+    -   Choose a destination folder, then click “Open” when prompted
+    -   If docker is installed, VS Code will prompt to reopen in container - **accept this**
+-   Or download ZIP and extract:
+    -   https://github.com/ebpro/fullstack-minimal-app/archive/refs/heads/develop.zip
+    -   `cd fullstack-minimal-app-develop/`
 
 ### To test the app quickly (No setup, no needed if use Docker and Dev Containers)
 
 Run the following command in the application directory to start the app:
 
-   ```bash
-   docker compose up --build
-   ```
+```bash
+docker compose up --build
+```
 
 ### For modern daily development (Recommended)
 
 **First Time Setup**:
 
 1. Open project in VS Code
-   - File > Open Folder... → select minimal-app directory
+    - File > Open Folder... → select minimal-app directory
 2. Reopen in container
-   - Click "Reopen in Container" notification
-   - OR: Cmd/Ctrl+Shift+P → "Dev Containers: Reopen in Container"
+    - Click "Reopen in Container" notification
+    - OR: Cmd/Ctrl+Shift+P → "Dev Containers: Reopen in Container"
 3. Wait for build (first time: 2-5 minutes)
 4. Open terminal in VS Code (Ctrl+`) and run:
 
@@ -183,11 +184,11 @@ fullstack-minimal-app/
 
 **Structure Purpose:**
 
-- **`frontend/src/`** - React application with components and styling
-- **`backend/src/`** - Express REST API with routes, middleware, and database connection
-- **`scraper-service/src/`** - Mock microservice for external data demonstration
-- **`db/`** - Database schema and initialization
-- **Root `package.json`** - npm workspace configuration for managing all services
+-   **`frontend/src/`** - React application with components and styling
+-   **`backend/src/`** - Express REST API with routes, middleware, and database connection
+-   **`scraper-service/src/`** - Mock microservice for external data demonstration
+-   **`db/`** - Database schema and initialization
+-   **Root `package.json`** - npm workspace configuration for managing all services
 
 ---
 
@@ -211,6 +212,14 @@ fullstack-minimal-app/
 
 ### System
 
+### Reviews
+
+| Method |           Endpoint           |               Description                |                      Query Params                       |
+| :----: | :--------------------------: | :--------------------------------------: | :-----------------------------------------------------: |
+|  GET   |        `/api/reviews`        |        List reviews for a product        | `product_id`, `source`, `min_rating`, `limit`, `offset` |
+|  POST  |        `/api/reviews`        |           Submit a new review            |                            -                            |
+|  GET   | `/api/reviews/aggregate/:id` | Get aggregate review stats for a product |                            -                            |
+
 | Method | Endpoint  |            Description            |
 | :----: | :-------: | :-------------------------------: |
 |  GET   | `/health` | Health check (includes DB status) |
@@ -225,24 +234,24 @@ curl http://localhost:4000/api/products?page=1&per_page=10
 
 ```json
 {
-  "data": [
-    {
-      "id": 1,
-      "name": "USB-C Charger",
-      "description": "Fast 30W USB-C charger",
-      "price": 19.99,
-      "image_url": "https://placehold.co/600x400?text=USB-C+Charger",
-      "category_id": 1,
-      "category_name": "Electronics",
-      "created_at": "2025-10-01T10:00:00.000Z"
+    "data": [
+        {
+            "id": 1,
+            "name": "USB-C Charger",
+            "description": "Fast 30W USB-C charger",
+            "price": 19.99,
+            "image_url": "https://placehold.co/600x400?text=USB-C+Charger",
+            "category_id": 1,
+            "category_name": "Electronics",
+            "created_at": "2025-10-01T10:00:00.000Z"
+        }
+    ],
+    "meta": {
+        "total": 20,
+        "page": 1,
+        "per_page": 10,
+        "total_pages": 2
     }
-  ],
-  "meta": {
-    "total": 20,
-    "page": 1,
-    "per_page": 10,
-    "total_pages": 2
-  }
 }
 ```
 
@@ -250,7 +259,7 @@ curl http://localhost:4000/api/products?page=1&per_page=10
 
 ## 🛠️ Development Commands
 
-- To run commands, open a terminal in VS Code (Ctrl+`) inside the Dev Container.
+-   To run commands, open a terminal in VS Code (Ctrl+`) inside the Dev Container.
 
 ```bash
 npm run dev    # Start with nodemon (auto-reload)
@@ -261,12 +270,12 @@ npm run lint   # Run ESLint
 
 ### Test APIs quickly (REST Client)
 
-- Open the file `api-tests.http` at the repo root.
-- Install the "REST Client" VS Code extension (if not already present).
-- Click "Send Request" above any request to exercise the Backend and Scraper endpoints.
-- Tip: Adjust `@backendUrl` and `@scraperUrl` variables at the top if you changed ports.
+-   Open the file `api-tests.http` at the repo root.
+-   Install the "REST Client" VS Code extension (if not already present).
+-   Click "Send Request" above any request to exercise the Backend and Scraper endpoints.
+-   Tip: Adjust `@backendUrl` and `@scraperUrl` variables at the top if you changed ports.
 
-- ADVANCED STUDENTS ONLY : To manage dependencies (run from project root):
+-   ADVANCED STUDENTS ONLY : To manage dependencies (run from project root):
 
 ```bash
 npm install  # Install dependencies
@@ -285,8 +294,8 @@ Cause: When running Vite inside a container, it must bind to `0.0.0.0` (not `loc
 
 Fixes:
 
-- Check `frontend/.env` has `VITE_HOST=0.0.0.0`
-- Start the frontend manually inside the container:
+-   Check `frontend/.env` has `VITE_HOST=0.0.0.0`
+-   Start the frontend manually inside the container:
 
 ```bash
 cd frontend
@@ -301,7 +310,7 @@ Cause: Another app is using the same port.
 
 Fixes:
 
-- Stop the other app (e.g., Remove Docker containers from docker desktop UI, stop local MySQL server).
+-   Stop the other app (e.g., Remove Docker containers from docker desktop UI, stop local MySQL server).
 
 ---
 
@@ -311,19 +320,19 @@ This project uses Docker for easy setup and consistent environments. The easiest
 
 ## 🔌 SQLTools (VS Code)
 
-- Dev Containers: SQLTools and the MySQL driver are already installed and preconfigured. Open SQLTools in VS Code and connect using the provided MySQL profile. No manual setup needed.
-- Local VS Code (outside the container): if you prefer a local connection, add a profile with these defaults and be sure containers are running:
-  - Host: 127.0.0.1, Port: 3306
-  - Database: minimal_app_db
-  - User/Password: appuser / apppassword
+-   Dev Containers: SQLTools and the MySQL driver are already installed and preconfigured. Open SQLTools in VS Code and connect using the provided MySQL profile. No manual setup needed.
+-   Local VS Code (outside the container): if you prefer a local connection, add a profile with these defaults and be sure containers are running:
+    -   Host: 127.0.0.1, Port: 3306
+    -   Database: minimal_app_db
+    -   User/Password: appuser / apppassword
 
 Note: These values come from docker-compose. If you changed MYSQL_DATABASE/USER/PASSWORD, use your custom values. Avoid exposing DB ports in production.
 
 ## Additional Resources
 
-- Dev Containers docs: https://code.visualstudio.com/docs/devcontainers/containers
-- Express best practices: https://expressjs.com/en/advanced/best-practice-performance.html
-- React documentation: https://react.dev/
+-   Dev Containers docs: https://code.visualstudio.com/docs/devcontainers/containers
+-   Express best practices: https://expressjs.com/en/advanced/best-practice-performance.html
+-   React documentation: https://react.dev/
 
 ---
 
@@ -352,8 +361,3 @@ This is a teaching project. Contributions that improve pedagogy are welcome. Ple
 MIT License - Free for educational use
 
 ---
-
-## 🙋 Support
-
-**For Students:** Read [LEARNING_NOTES.md](./LEARNING_NOTES.md) first.
-**Issues:** Open an issue for bugs or pedagogical improvements.

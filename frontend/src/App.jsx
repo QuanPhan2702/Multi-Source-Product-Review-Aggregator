@@ -98,67 +98,44 @@ export default function App() {
 
     return (
         <BrowserRouter>
-            <div className="p-4 max-w-4xl mx-auto">
+            <div className="p-4 max-w-7xl mx-auto">
                 {/* Header with status indicator and navigation */}
                 {/* ACCESSIBILITY: Proper landmark roles, ARIA labels, and semantic HTML */}
-                <header className="flex items-center justify-between mb-4">
+                <header
+                    className="bg-white shadow-md rounded-lg py-4 mb-6 flex items-center justify-between"
+                    role="banner"
+                >
                     <div>
-                        <h1 className="text-2xl font-bold">
-                            Minimal Product Catalog
+                        <h1 className="text-2xl font-bold text-gray-800">
+                            Multi-Source Product Review Aggregator
                         </h1>
-                        <div className="mt-1 text-sm text-gray-600 flex items-center gap-3">
-                            {/* Live backend status indicator (green/yellow/red) */}
-                            {/* ACCESSIBILITY: Screen reader friendly status with aria-live */}
-                            <div
-                                className="flex items-center gap-2"
-                                role="status"
-                                aria-live="polite"
-                            >
-                                <span
-                                    className={`inline-block w-2 h-2 rounded-full ${statusColor}`}
-                                    aria-hidden="true"
-                                />
-                                <span
-                                    aria-label={`Backend connection status: ${statusText}`}
-                                >
-                                    {statusText}
-                                </span>
-                            </div>
-                            {/* Display the backend URL so students can verify configuration */}
-                            <div
-                                className="text-xs text-gray-500"
-                                aria-label="Backend configuration"
-                            >
-                                Using backend:{" "}
-                                <code className="px-2 py-1 bg-gray-100 rounded">
-                                    {String(BACKEND)}
-                                </code>
-                            </div>
-                        </div>
+                        <p className="mt-1 text-sm text-gray-600">
+                            Compare reviews from Amazon, BestBuy, Walmart
+                        </p>
                     </div>
 
                     {/* Simple nav links (React Router) */}
                     {/* ACCESSIBILITY: Proper navigation landmark with aria-label */}
                     <nav
-                        className="space-x-2 flex items-center"
+                        className="flex items-center gap-4"
                         aria-label="Main navigation"
                     >
                         <Link
                             to="/"
-                            className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded px-2 py-1"
-                            aria-label="Go to home page (product list)"
+                            className="text-gray-600 font-medium hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+                            aria-label="Go to Home page"
                         >
                             Home
                         </Link>
-                        <Link
+                        {/* <Link
                             to="/add"
                             className="text-blue-600 hover:text-blue-800 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded px-2 py-1"
                             aria-label="Add a new product"
                         >
                             Add product
-                        </Link>
-                        <div
-                            className="ml-3 px-2 py-1 border rounded text-sm"
+                        </Link> */}
+                        {/* <div
+                            className="px-3 py-1.5 border border-gray-200 bg-gray-50 rounded-md text-sm"
                             aria-label={`Cart has ${cartCount} item${
                                 cartCount === 1 ? "" : "s"
                             }`}
@@ -167,7 +144,7 @@ export default function App() {
                             <span className="font-semibold" aria-live="polite">
                                 {cartCount}
                             </span>
-                        </div>
+                        </div> */}
                         {/* EXTENSION_POINT: nav.auth | Add login/logout links | beginner — Add /login route and auth state */}
                     </nav>
                 </header>
@@ -212,9 +189,9 @@ export default function App() {
                             path="/"
                             element={
                                 <>
-                                    <FeaturedProducts
+                                    {/* <FeaturedProducts
                                         onAddToCart={handleAddToCart}
-                                    />
+                                    /> */}
                                     <ProductList
                                         categories={categories}
                                         backend={BACKEND}
@@ -256,49 +233,6 @@ export default function App() {
                         {/* EXTENSION_POINT: routes.users | Add user management routes | beginner — Add /users, /users/:id, /users/new */}
                     </Routes>
                 </main>
-
-                {/* <div className="space-y-4">
-          {[
-            {
-              id: 'rev_demo_1',
-              source: 'Amazon',
-              author: 'John Doe',
-              rating: 4,
-              title: 'Great product!',
-              content: "These headphones are great for commuting — clear sound and solid ANC.",
-              date: '2025-10-15T08:30:00Z'
-            },
-            {
-              id: 'rev_demo_2',
-              source: 'BestBuy',
-              author: 'Sarah J.',
-              rating: 5,
-              title: 'Fantastic value',
-              content: "Amazing battery life and comfortable fit. Highly recommended.",
-              date: '2025-10-14T12:00:00Z'
-            },
-            {
-              id: 'rev_demo_3',
-              source: 'Walmart',
-              author: 'Carlos R.',
-              rating: 3,
-              title: 'Good but could improve',
-              content: "Decent sound but ANC isn't consistent across environments.",
-              date: '2025-10-13T09:15:00Z'
-            },
-            {
-              id: 'rev_demo_4',
-              source: 'Amazon',
-              author: 'Priya K.',
-              rating: 5,
-              title: 'Exceeded expectations',
-              content: "Exceptional clarity and build quality. The app controls are a nice bonus.",
-              date: '2025-10-16T16:45:00Z'
-            }
-          ].map((r) => (
-            <ReviewCard key={r.id} review={r} />
-          ))}
-        </div> */}
             </div>
         </BrowserRouter>
     );
